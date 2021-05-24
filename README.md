@@ -25,12 +25,14 @@ Usage: syncbinlog.sh [options]
 
   --backup-dir=        Backup destination directory (required)
   --log-dir=           Log directory (defaults to '/var/log/syncbinlog')
+  --log-dir=           Log directory (defaults to '/var/log/syncbinlog')
   --prefix=            Backup file prefix (defaults to 'backup-')
   --mysql-conf=        Mysql defaults file for client auth (defaults to './.my.cnf')
   --compress           Compress backuped binlog files
   --compress-app=      Compression app (defaults to 'pigz -p{number-of-cores - 1}'). Compression parameters can be given as well (e.g. pigz -p6 for 6 threaded compression)
   --rotate=X           Rotate backup files for X days (defaults to 30)
   --verbose=           Write logs to stdout as well
+  --stop               Stop syncbinlog.sh
 ```
 
 Example: Backup binlog files of last 10 days and compress them
