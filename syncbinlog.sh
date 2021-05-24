@@ -79,6 +79,7 @@ parse_config() {
             ;;
             *)
             # unknown option
+            echo "EROR: Unknow argument ${arg}"
             usage
             ;;
         esac
