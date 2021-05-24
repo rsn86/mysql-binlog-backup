@@ -108,7 +108,7 @@ compress_files() {
         [[ `basename ${filename}` == "${LAST_MODIFIED_BINLOG_FILE}" ]] && break
 
         log "Compressing ${filename}"
-        ${COMPRESS_APP} --force ${filename} > "${LOG_DIR}/status.log"
+        ${COMPRESS_APP} --force ${filename} 2>&1 >> "${LOG_DIR}/status.log"
         log "Compressed ${filename}"
     done
 }
