@@ -141,6 +141,7 @@ die() {
         log "Removing PID file"
         rm "${PID_FILE}" -f
     fi
+    exit 0
 }
 
 # listen to the process signals
@@ -162,6 +163,21 @@ STOP=false
 ARGS=( "$@" )
 parse_config
 
+if [[ ${STOP} == true ]]; then
+    if [[ -f ${PID_FILE} ]]; then
+        SCRIPT_PID=$(cat "${PID_FILE}")
+        SCRIPT_NAME=$(ps -p ${SCRIPT_PID} -o cmd= | awk '{ print $1 }')
+        # check process name to ensure it is syncbinlog.sh pid
+        if [[ ${SCRIPT_NAME} == $(basename $0) ]]; then
+            kill -SIGTERM -- -${SCRIPT_PID}
+        fi
+        exit 0
+    else
+        echo "ERROR: PID file ${PID_FILE} does not exist."
+        exit 1
+    fi
+fi
+
 if [[ -z ${BACKUP_DIR} ]]; then
     echo "ERROR: Please, specify a destination directory for backups using --backup-dir parameter."
     usage
@@ -173,20 +189,6 @@ if [[ ! -f ${MYSQL_CONFIG_FILE} ]]; then
     exit 1
 fi
 
-if [[ ${STOP} == true ]]; then
-    if [[ -f ${PID_FILE} ]]; then
-        SCRIPT_PID=$(cat "${PID_FILE}")
-        SCRIPT_NAME=$(ps -p ${SCRIPT_PID} -o cmd= | awk '{ print $1 }')
-        # check process name to ensure it is syncbinlog.sh pid
-        if [[ ${SCRIPT_NAME} == $(basename $0) ]]; then
-            kill -SIGTERM ${SCRIPT_PID}
-        fi
-        exit 0
-    else
-        echo "ERROR: PID file ${PID_FILE} does not exist."
-        exit 1
-    fi
-fi
 
 if ( set -o noclobber; echo "${$}" > "${PID_FILE}" ) 2> /dev/null; then
     APP_PID=0
