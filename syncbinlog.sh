@@ -17,6 +17,7 @@ usage() {
     echo -e "   --pid-file=          PID file (defaults to '/var/run/syncbinlog.pid')"
     echo -e "   --prefix=            Backup file prefix (defaults to 'backup-')"
     echo -e "   --mysql-conf=        Mysql defaults file for client auth (defaults to './.my.cnf')"
+    echo -e "   --login-path=        Read this path from the login file (defaults to 'client')"
     echo -e "   --compress           Compress backuped binlog files"
     echo -e "   --compress-app=      Compression app (defaults to 'pigz'). Compression parameters can be given as well (e.g. pigz -p6 for 6 threaded compression)"
     echo -e "   --rotate=X           Rotate backup files for X days, 0 disables rotation (defaults to 30)"
@@ -41,7 +42,7 @@ log () {
 
 # Parse configuration parameters
 parse_config() {
-    for arg in ${ARGS}
+    for arg in "${ARGS[@]}"
     do
         case ${arg} in
             --prefix=*)
@@ -58,6 +59,9 @@ parse_config() {
             ;;
             --mysql-conf=*)
             MYSQL_CONFIG_FILE="${arg#*=}"
+            ;;
+            --login-path=*)
+            LOGIN_PATH="${arg#*=}"
             ;;
             --compress)
             COMPRESS=true
@@ -144,6 +148,7 @@ trap die SIGINT SIGTERM
 
 # Default configuration parameters
 MYSQL_CONFIG_FILE=./.my.cnf
+LOGIN_PATH="client"
 BACKUP_DIR=""
 LOG_DIR=/var/log/syncbinlog
 PID_FILE=/var/run/syncbinlog.pid
@@ -154,7 +159,7 @@ ROTATE_DAYS=30
 VERBOSE=false
 STOP=false
 
-ARGS="$@"
+ARGS=( "$@" )
 parse_config
 
 if [[ -z ${BACKUP_DIR} ]]; then
@@ -169,7 +174,7 @@ if [[ ! -f ${MYSQL_CONFIG_FILE} ]]; then
 fi
 
 if [[ ${STOP} == true ]]; then
-    if [[ -f ${PID_FILE} ]]; 
+    if [[ -f ${PID_FILE} ]]; then
         SCRIPT_PID=$(cat "${PID_FILE}")
         SCRIPT_NAME=$(ps -p ${SCRIPT_PID} -o cmd= | awk '{ print $1 }')
         # check process name to ensure it is syncbinlog.sh pid
@@ -198,7 +203,7 @@ if ( set -o noclobber; echo "${$}" > "${PID_FILE}" ) 2> /dev/null; then
     log "Log destination: $LOG_DIR"
     log "Reading mysql client configuration from $MYSQL_CONFIG_FILE"
 
-    BINLOG_BASENAME=$(mysql --defaults-extra-file=${MYSQL_CONFIG_FILE} -Bse "SHOW GLOBAL VARIABLES LIKE 'log_bin_basename'")
+    BINLOG_BASENAME=$(mysql --defaults-extra-file=${MYSQL_CONFIG_FILE} --login-path=${LOGIN_PATH} -Bse "SHOW GLOBAL VARIABLES LIKE 'log_bin_basename'")
     if [[ $? -eq "1" ]]; then
         log "Please, check your mysql credentials" "ERROR"
         exit 1
@@ -209,7 +214,7 @@ if ( set -o noclobber; echo "${$}" > "${PID_FILE}" ) 2> /dev/null; then
     BINLOG_BASENAME=$(basename `echo ${BINLOG_BASENAME} | tail -1 | awk '{ print $2 }'`)
     log "Binlog file basename is $BINLOG_BASENAME"
 
-    BINLOG_INDEX_FILE=`mysql --defaults-extra-file=${MYSQL_CONFIG_FILE} -Bse "SHOW GLOBAL VARIABLES LIKE 'log_bin_index'" | tail -1 | awk '{ print $2 }'`
+    BINLOG_INDEX_FILE=`mysql --defaults-extra-file=${MYSQL_CONFIG_FILE} --login-path=${LOGIN_PATH} -Bse "SHOW GLOBAL VARIABLES LIKE 'log_bin_index'" | tail -1 | awk '{ print $2 }'`
     log "Binlog index file is $BINLOG_BASENAME"
 
     BINLOG_LAST_FILE=`tail -1 "$BINLOG_INDEX_FILE"`
@@ -277,7 +282,7 @@ if ( set -o noclobber; echo "${$}" > "${PID_FILE}" ) 2> /dev/null; then
 
         log "Starting live binlog backup from ${BINLOG_SYNC_FILE_NAME}"
 
-        mysqlbinlog --defaults-extra-file=${MYSQL_CONFIG_FILE} \
+        mysqlbinlog --defaults-extra-file=${MYSQL_CONFIG_FILE} --login-path=${LOGIN_PATH} \
             --raw --read-from-remote-server --stop-never \
             --verify-binlog-checksum \
             --result-file=${BACKUP_PREFIX} \

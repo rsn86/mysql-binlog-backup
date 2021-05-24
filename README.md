@@ -28,6 +28,7 @@ Usage: syncbinlog.sh [options]
   --pid-file=          PID file (defaults to '/var/run/syncbinlog.pid')
   --prefix=            Backup file prefix (defaults to 'backup-')
   --mysql-conf=        Mysql defaults file for client auth (defaults to './.my.cnf')
+  --login-path=        Read this path from the login file (defaults to 'client')
   --compress           Compress backuped binlog files
   --compress-app=      Compression app (defaults to 'pigz -p{number-of-cores - 1}'). Compression parameters can be given as well (e.g. pigz -p6 for 6 threaded compression)
   --rotate=X           Rotate backup files for X days, 0 disables rotation (defaults to 30)
