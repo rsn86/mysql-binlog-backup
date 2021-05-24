@@ -166,7 +166,7 @@ parse_config
 if [[ ${STOP} == true ]]; then
     if [[ -f ${PID_FILE} ]]; then
         SCRIPT_PID=$(cat "${PID_FILE}")
-        SCRIPT_NAME=$(ps -p ${SCRIPT_PID} -o cmd= | awk '{ print $1 }')
+        SCRIPT_NAME=$(ps -p ${SCRIPT_PID} -o cmd=)
         # check process name to ensure it is syncbinlog.sh pid
         if [[ ${SCRIPT_NAME} == *"$(basename $0)"* ]]; then
             kill -SIGTERM ${SCRIPT_PID}
