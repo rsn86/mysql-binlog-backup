@@ -25,7 +25,7 @@ Usage: syncbinlog.sh [options]
 
   --backup-dir=        Backup destination directory (required)
   --log-dir=           Log directory (defaults to '/var/log/syncbinlog')
-  --log-dir=           Log directory (defaults to '/var/log/syncbinlog')
+  --pid-file=          PID file (defaults to '/var/run/syncbinlog.pid')
   --prefix=            Backup file prefix (defaults to 'backup-')
   --mysql-conf=        Mysql defaults file for client auth (defaults to './.my.cnf')
   --compress           Compress backuped binlog files

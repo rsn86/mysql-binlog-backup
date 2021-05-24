@@ -52,6 +52,7 @@ parse_config() {
             ;;
             --pid-file=*)
             PID_FILE="${arg#*=}"
+            ;;
             --backup-dir=*)
             BACKUP_DIR="${arg#*=}"
             ;;
