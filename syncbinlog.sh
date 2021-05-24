@@ -19,7 +19,7 @@ usage() {
     echo -e "   --mysql-conf=        Mysql defaults file for client auth (defaults to './.my.cnf')"
     echo -e "   --compress           Compress backuped binlog files"
     echo -e "   --compress-app=      Compression app (defaults to 'pigz'). Compression parameters can be given as well (e.g. pigz -p6 for 6 threaded compression)"
-    echo -e "   --rotate=X           Rotate backup files for X days (defaults to 30)"
+    echo -e "   --rotate=X           Rotate backup files for X days, 0 disables rotation (defaults to 30)"
     echo -e "   --verbose=           Write logs to stdout as well"
     echo -e "   --stop               Stop $(basename $0)"
     exit 1
@@ -110,6 +110,9 @@ compress_files() {
 
 # Rotate older backups
 rotate_files() {
+    if [ "${ROTATE_DAYS}" == "0" ]; then
+        return 0
+    fi
     # find binlog backup files older than rotation period
     ROTATED_FILES=$(find ${BACKUP_DIR} -type f -name "${BACKUP_PREFIX}${BINLOG_BASENAME}*" -mtime +${ROTATE_DAYS} | grep -P ".+\.[0-9]+(|\.original)$")
     for filename in ${ROTATED_FILES}
