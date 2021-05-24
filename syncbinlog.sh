@@ -132,7 +132,7 @@ die() {
     log "Exit signal caught!"
     log "Stopping child processes before exit"
     trap - SIGINT SIGTERM # clear the listener
-    kill -- -$$ # Sends SIGTERM to child/sub processes
+    kill -- -$$ 2> /dev/null # Sends SIGTERM to child/sub processes
     if [[ ! -z ${APP_PID} ]]; then
         log "Killing mysqlbinlog process"
         kill ${APP_PID}
@@ -168,8 +168,8 @@ if [[ ${STOP} == true ]]; then
         SCRIPT_PID=$(cat "${PID_FILE}")
         SCRIPT_NAME=$(ps -p ${SCRIPT_PID} -o cmd= | awk '{ print $1 }')
         # check process name to ensure it is syncbinlog.sh pid
-        if [[ ${SCRIPT_NAME} == $(basename $0) ]]; then
-            kill -SIGTERM -- -${SCRIPT_PID}
+        if [[ ${SCRIPT_NAME} == *"$(basename $0)"* ]]; then
+            kill -SIGTERM ${SCRIPT_PID}
         fi
         exit 0
     else
