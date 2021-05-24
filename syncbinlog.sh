@@ -79,7 +79,7 @@ parse_config() {
             ;;
             *)
             # unknown option
-            echo "EROR: Unknow argument ${arg}"
+            echo "ERROR: Unknow argument ${arg}"
             usage
             ;;
         esac
